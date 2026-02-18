@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Security Scanner (OWASP ZAP)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #e5e7eb;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            margin-top: 40px;
+            background: #020617;
+            border-radius: 12px;
+            padding: 24px 28px;
+            width: 95%;
+            max-width: 900px;
+            box-shadow: 0 25px 50px -12px rgba(15,23,42,0.8);
+            border: 1px solid #1f2933;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #38bdf8;
+        }
+        p.subtitle {
+            color: #9ca3af;
+            margin-top: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #4b5563;
+            background: #020617;
+            color: #e5e7eb;
+            font-size: 14px;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px #38bdf8;
+        }
+        button {
+            margin-top: 14px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(to right, #0ea5e9, #22c55e);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #e5e7eb;
+        }
+        .error {
+            color: #f97373;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .card {
+            background: #020617;
+            border-radius: 10px;
+            border: 1px solid #1f2933;
+            padding: 12px 14px;
+            font-size: 13px;
+        }
+        .card h3 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: #e5e7eb;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-high {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+        }
+        .badge-medium {
+            background: rgba(251, 191, 36, 0.12);
+            color: #fbbf24;
+        }
+        .badge-low {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+        }
+        .badge-info {
+            background: rgba(59, 130, 246, 0.12);
+            color: #60a5fa;
+        }
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .small {
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Security Scanner (OWASP ZAP + Spring Boot)</h1>
+    <p class="subtitle">
+        Enter any web application URL. The backend (port 8089) will call OWASP ZAP, check IP, server, technologies, open ports,
+        SQL Injection, XSS, security headers and overall risk. Results are stored in PostgreSQL.
+    </p>
+
+    <label for="urlInput">Target URL</label>
+    <input id="urlInput" type="text" placeholder="e.g. https://example.com">
+    <button id="scanBtn" onclick="startScan()">Scan URL</button>
+
+    <div id="status" class="status"></div>
+</div>
+
+<script>
+    async function startScan() {
+        const url = document.getElementById('urlInput').value.trim();
+        const statusEl = document.getElementById('status');
+        const btn = document.getElementById('scanBtn');
+
+        if (!url) {
+            statusEl.textContent = 'Please enter a URL.';
+            statusEl.classList.add('error');
+            return;
+        }
+
+        statusEl.textContent = 'Starting scan with OWASP ZAP... This may take some time.';
+        statusEl.classList.remove('error');
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/scan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url })
+            });
+
+            if (!response.ok) {
+                throw new Error('Scan failed (HTTP ' + response.status + ')');
+            }
+
+            const data = await response.json();
+            statusEl.textContent = 'Scan completed and stored in database. Redirecting to results...';
+            // Redirect to results page with scan ID
+            setTimeout(() => {
+                window.location.href = 'results.html?id=' + data.id;
+            }, 1000);
+        } catch (e) {
+            statusEl.textContent = 'Error running scan: ' + e.message + '. Make sure OWASP ZAP is running and PostgreSQL is configured.';
+            statusEl.classList.add('error');
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+</script>
+</body>
+</html>
+

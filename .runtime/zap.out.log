@@ -1,0 +1,4 @@
+
+C:\Users\user\Desktop\ALLTEST_CODE>if exist "C:\Users\user\ZAP\.ZAP_JVM.properties" (set /p jvmopts= 0<"C:\Users\user\ZAP\.ZAP_JVM.properties" )  else (set jvmopts=-Xmx512m ) 
+
+C:\Users\user\Desktop\ALLTEST_CODE>java -Xmx512m -jar zap-2.17.0.jar -daemon -host 127.0.0.1 -port 8090 -config api.disablekey=true -config api.addrs.addr.name=127.0.0.1 -config api.addrs.addr.regex=false 

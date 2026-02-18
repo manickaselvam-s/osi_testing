@@ -1,0 +1,9 @@
+com\example\securityscanner\dto\ScanResultDto.class
+com\example\securityscanner\SecurityScannerApplication.class
+com\example\securityscanner\dto\ScanRequest.class
+com\example\securityscanner\service\ScanResultMapper.class
+com\example\securityscanner\controller\ScanController.class
+com\example\securityscanner\config\AppConfig.class
+com\example\securityscanner\model\ScanResult.class
+com\example\securityscanner\service\ZapScannerService.class
+com\example\securityscanner\repository\ScanResultRepository.class

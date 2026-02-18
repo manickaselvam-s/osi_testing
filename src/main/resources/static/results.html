@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scan Results - Security Scanner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #e5e7eb;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            margin-top: 40px;
+            background: #020617;
+            border-radius: 12px;
+            padding: 24px 28px;
+            width: 95%;
+            max-width: 1000px;
+            box-shadow: 0 25px 50px -12px rgba(15,23,42,0.8);
+            border: 1px solid #1f2933;
+            margin-bottom: 40px;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #38bdf8;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #60a5fa;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .card {
+            background: #020617;
+            border-radius: 10px;
+            border: 1px solid #1f2933;
+            padding: 16px 18px;
+            font-size: 13px;
+        }
+        .card h3 {
+            margin: 0 0 12px;
+            font-size: 15px;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+        .card-content {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-high {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+        }
+        .badge-medium {
+            background: rgba(251, 191, 36, 0.12);
+            color: #fbbf24;
+        }
+        .badge-low {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+        }
+        .badge-info {
+            background: rgba(59, 130, 246, 0.12);
+            color: #60a5fa;
+        }
+        .badge-safe {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+        }
+        .badge-found {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+        }
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .small {
+            font-size: 12px;
+        }
+        .status-message {
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+        .status-safe {
+            background: rgba(52, 211, 153, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+        .status-found {
+            background: rgba(248, 113, 113, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+        .security-headers-list {
+            margin-top: 8px;
+        }
+        .security-headers-list div {
+            margin: 4px 0;
+            padding: 4px 0;
+            font-size: 12px;
+        }
+        .found-header {
+            color: #34d399;
+        }
+        .missing-header {
+            color: #f87171;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="index.html" class="back-link">← Back to Scanner</a>
+    <h1>Scan Results</h1>
+    
+    <div id="loading" class="loading">Loading scan results...</div>
+    
+    <div id="result" style="display:none;">
+        <div class="grid">
+            <div class="card">
+                <h3>Target</h3>
+                <div class="card-content">
+                    <div class="small mono" id="targetUrl"></div>
+                    <div class="small" style="margin-top: 8px; color: #9ca3af;">
+                        Scanned at: <span id="createdAt"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Host Info</h3>
+                <div class="card-content">
+                    <div class="small">IP Address: <span class="mono" id="ipAddress"></span></div>
+                    <div class="small" style="margin-top: 6px;">Server: <span id="server"></span></div>
+                    <div class="small" style="margin-top: 6px;">Version: <span id="serverVersion"></span></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Technologies</h3>
+                <div class="card-content">
+                    <div class="small" id="technologies"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Open Ports</h3>
+                <div class="card-content">
+                    <div class="small mono" id="openPorts"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>SQL Injection</h3>
+                <div class="card-content">
+                    <div id="sqlStatus" class="status-message"></div>
+                    <div class="small" id="sqlSummary" style="margin-top: 8px;"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>XSS (Cross-Site Scripting)</h3>
+                <div class="card-content">
+                    <div id="xssStatus" class="status-message"></div>
+                    <div class="small" id="xssSummary" style="margin-top: 8px;"></div>
+                </div>
+            </div>
+            
+            <div class="card" style="grid-column: span 2;">
+                <h3>Security Headers</h3>
+                <div class="card-content">
+                    <div id="securityHeaders" class="security-headers-list"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Overall Risk Level</h3>
+                <div class="card-content">
+                    <span id="riskBadge" class="badge badge-info">Informational</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get scan ID from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const scanId = urlParams.get('id');
+    
+    if (!scanId) {
+        document.getElementById('loading').textContent = 'Error: No scan ID provided.';
+        document.getElementById('loading').style.color = '#f87171';
+    } else {
+        loadScanResult(scanId);
+    }
+    
+    async function loadScanResult(id) {
+        try {
+            const response = await fetch('/api/scan/' + id);
+            if (!response.ok) {
+                throw new Error('Scan result not found (HTTP ' + response.status + ')');
+            }
+            const data = await response.json();
+            displayResult(data);
+        } catch (e) {
+            document.getElementById('loading').textContent = 'Error loading scan result: ' + e.message;
+            document.getElementById('loading').style.color = '#f87171';
+        }
+    }
+    
+    function displayResult(data) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('result').style.display = 'block';
+        
+        // Target
+        document.getElementById('targetUrl').textContent = data.targetUrl || 'N/A';
+        document.getElementById('createdAt').textContent = data.createdAt ? 
+            new Date(data.createdAt).toLocaleString() : 'N/A';
+        
+        // Host Info
+        document.getElementById('ipAddress').textContent = data.ipAddress || 'N/A';
+        document.getElementById('server').textContent = data.server || 'N/A';
+        document.getElementById('serverVersion').textContent = data.serverVersion || 'N/A';
+        
+        // Technologies
+        document.getElementById('technologies').textContent = data.technologies || 'N/A';
+        
+        // Open Ports
+        document.getElementById('openPorts').textContent = data.openPorts || 'N/A';
+        
+        // SQL Injection
+        const sqlSummary = data.sqlInjectionSummary || '';
+        const sqlStatusEl = document.getElementById('sqlStatus');
+        const sqlSummaryEl = document.getElementById('sqlSummary');
+        
+        if (sqlSummary.toLowerCase().includes('found') || sqlSummary.toLowerCase().includes('issues')) {
+            sqlStatusEl.textContent = '⚠️ Vulnerabilities Found';
+            sqlStatusEl.className = 'status-message status-found';
+            sqlSummaryEl.textContent = sqlSummary;
+        } else {
+            sqlStatusEl.textContent = '✓ No SQL Injection vulnerabilities detected';
+            sqlStatusEl.className = 'status-message status-safe';
+            sqlSummaryEl.textContent = sqlSummary || 'No SQL Injection issues detected by ZAP';
+        }
+        
+        // XSS
+        const xssSummary = data.xssSummary || '';
+        const xssStatusEl = document.getElementById('xssStatus');
+        const xssSummaryEl = document.getElementById('xssSummary');
+        
+        if (xssSummary.toLowerCase().includes('found') || xssSummary.toLowerCase().includes('issues')) {
+            xssStatusEl.textContent = '⚠️ Vulnerabilities Found';
+            xssStatusEl.className = 'status-message status-found';
+            xssSummaryEl.textContent = xssSummary;
+        } else {
+            xssStatusEl.textContent = '✓ No XSS vulnerabilities detected';
+            xssStatusEl.className = 'status-message status-safe';
+            xssSummaryEl.textContent = xssSummary || 'No XSS issues detected by ZAP';
+        }
+        
+        // Security Headers
+        const headersText = data.securityHeaders || '';
+        const headersEl = document.getElementById('securityHeaders');
+        
+        if (headersText.includes('Found:') || headersText.includes('Missing:')) {
+            const parts = headersText.split(' | ');
+            parts.forEach(part => {
+                const div = document.createElement('div');
+                if (part.startsWith('Found:')) {
+                    div.className = 'found-header';
+                    div.textContent = '✓ ' + part;
+                } else if (part.startsWith('Missing:')) {
+                    div.className = 'missing-header';
+                    div.textContent = '✗ ' + part;
+                } else {
+                    div.textContent = part;
+                }
+                headersEl.appendChild(div);
+            });
+        } else {
+            headersEl.innerHTML = '<div class="small" style="color: #9ca3af;">' + headersText + '</div>';
+        }
+        
+        // Risk Level
+        const badge = document.getElementById('riskBadge');
+        const risk = (data.overallRiskLevel || 'Informational');
+        badge.textContent = risk;
+        badge.className = 'badge';
+        const r = risk.toLowerCase();
+        if (r.includes('high')) badge.classList.add('badge-high');
+        else if (r.includes('medium')) badge.classList.add('badge-medium');
+        else if (r.includes('low')) badge.classList.add('badge-low');
+        else badge.classList.add('badge-info');
+    }
+</script>
+</body>
+</html>
